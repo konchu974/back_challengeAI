@@ -96,4 +96,6 @@ public class DailyChallenge {
     public int hashCode() {
         return getClass().hashCode();
     }
+
+
 }

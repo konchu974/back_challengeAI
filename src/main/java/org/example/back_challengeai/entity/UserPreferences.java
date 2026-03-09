@@ -59,4 +59,6 @@ public class UserPreferences {
     public int hashCode() {
         return getClass().hashCode();
     }
+
+
 }

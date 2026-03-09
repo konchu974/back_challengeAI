@@ -79,4 +79,6 @@ public class Notification {
     public int hashCode() {
         return getClass().hashCode();
     }
+
+
 }
