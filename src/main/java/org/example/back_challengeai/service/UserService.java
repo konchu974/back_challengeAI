@@ -1,5 +1,7 @@
 package org.example.back_challengeai.service;
 
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.back_challengeai.entity.User;
@@ -19,6 +21,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserPreferencesRepository userPreferencesRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public User registerUser(String email, String password) {
 
@@ -26,9 +29,11 @@ public class UserService {
             throw new IllegalArgumentException("Email deja utilise");
         }
 
+        String hashedPassword = passwordEncoder.encode(password);
+
         User user = User.builder()
                 .email(email)
-                .password(password)
+                .password(hashedPassword)
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -43,6 +48,18 @@ public class UserService {
         userPreferencesRepository.save(prefs);
 
        return savedUser;
+    }
+
+    public User login(String email, String password) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
+
+        return user;
     }
 
     public User findByEmail(String email) {

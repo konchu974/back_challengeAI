@@ -1,5 +1,6 @@
 package org.example.back_challengeai.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
@@ -45,6 +46,7 @@ public class UserPreferences {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", unique = true, nullable = false)
+    @JsonIgnore
     private User user;
 
     @Override

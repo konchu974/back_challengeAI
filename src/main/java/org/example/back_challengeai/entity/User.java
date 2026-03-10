@@ -1,5 +1,6 @@
 package org.example.back_challengeai.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -37,6 +38,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
+    @JsonIgnore
     private List<DailyChallenge> challenges = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -46,10 +48,12 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "achievement_id")
     )
     @Builder.Default
+    @JsonIgnore
     private Set<Achievement> achievements = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
+    @JsonIgnore
     private List<Notification> notifications = new  ArrayList<>();
 
 

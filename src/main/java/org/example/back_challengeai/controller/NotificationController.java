@@ -1,7 +1,7 @@
 package org.example.back_challengeai.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.back_challengeai.dtos.UnreadCountResponse;
+import org.example.back_challengeai.dto.UnreadCountResponse;
 import org.example.back_challengeai.entity.Notification;
 import org.example.back_challengeai.service.NotificationService;
 import org.springframework.http.ResponseEntity;

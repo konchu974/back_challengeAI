@@ -1,4 +1,4 @@
-package org.example.back_challengeai.dtos;
+package org.example.back_challengeai.dto;
 
 import lombok.Data;
 

@@ -1,7 +1,7 @@
 package org.example.back_challengeai.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.back_challengeai.dtos.UpdatePreferencesRequest;
+import org.example.back_challengeai.dto.UpdatePreferencesRequest;
 import org.example.back_challengeai.entity.Achievement;
 import org.example.back_challengeai.entity.User;
 import org.example.back_challengeai.entity.UserPreferences;
