@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.back_challengeai.entity.ChallengeStatus;
 import org.example.back_challengeai.entity.DailyChallenge;
 import org.example.back_challengeai.entity.User;
+import org.example.back_challengeai.entity.UserPreferences;
 import org.example.back_challengeai.repository.DailyChallengeRepository;
 import org.example.back_challengeai.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class ChallengeService {
 
     private final DailyChallengeRepository dailyChallengeRepository;
     private final UserRepository userRepository;
+    private final AIService aIService;
 
     public List<DailyChallenge> getTodayChallenges(UUID userId) {
         return dailyChallengeRepository.findByUser_IdAndChallengeDate(userId, LocalDate.now());
@@ -52,45 +54,58 @@ public class ChallengeService {
         LocalDate currentDate = LocalDate.now();
         int streak = 0;
 
-        while (true){
+        while (true) {
 
             long count = dailyChallengeRepository.countByUser_IdAndChallengeDateAndStatus(userId, currentDate, ChallengeStatus.COMPLETED);
 
-            if (count == 0){
+            if (count == 0) {
                 break;
             }
 
-            streak ++;
+            streak++;
             currentDate = currentDate.minusDays(1);
         }
         return streak;
     }
 
     public List<DailyChallenge> generateDailyChallenges(UUID userId) {
-        List<DailyChallenge> existing = getTodayChallenges(userId);
-        if (!existing.isEmpty()) {
-            throw new IllegalArgumentException("challenge already exists for today");
+        // Vérifier si des challenges existent déjà
+        List<DailyChallenge> existingChallenges = dailyChallengeRepository
+                .findByUser_IdAndChallengeDate(userId, LocalDate.now());
+
+        if (!existingChallenges.isEmpty()) {
+            throw new RuntimeException("Challenges already generated for today");
         }
 
-        User user  = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("user not found"));
+        // 1. Récupérer le user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String[] simulatedChallenges = {
-                "Marche 5000 pas aujourd'hui",
-                "Bois 8 verres d'eau",
-                "Lis 10 pages d'un livre"
-        };
+        // 2. Récupérer les préférences
+        UserPreferences prefs = user.getPreferences();
 
+        // 3. Générer avec l'IA
+        List<String> aiChallenges = aIService.generateChallenges(
+                prefs.getInterests(),
+                prefs.getGoals(),
+                prefs.getDailyTime()
+        );
+
+        // 4. Créer les entités DailyChallenge
         List<DailyChallenge> challenges = new ArrayList<>();
 
-        for (String text : simulatedChallenges) {
-            DailyChallenge dChallenge = DailyChallenge.builder()
+        for (String challengeText : aiChallenges) {
+            DailyChallenge challenge = DailyChallenge.builder()
                     .user(user)
+                    .challengeText(challengeText)
                     .challengeDate(LocalDate.now())
-                    .challengeText(text)
+                    .status(ChallengeStatus.PENDING)
                     .build();
 
-            challenges.add(dailyChallengeRepository.save(dChallenge));
+            challenges.add(challenge);
         }
-        return challenges;
+
+        return dailyChallengeRepository.saveAll(challenges);
     }
+
 }
