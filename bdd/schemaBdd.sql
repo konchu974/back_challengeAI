@@ -1,8 +1,8 @@
 -- ============================================================================
 -- ChallengeAI - Script de création de base de données PostgreSQL
--- Version: 1.0 - MVP
+-- Version: 1.1 - MVP avec pseudo
 -- Auteur: Clarence Dugain
--- Date: 2025-03-06
+-- Date: 2025-03-16
 -- ============================================================================
 
 -- Suppression des tables existantes (pour réinitialisation)
@@ -35,15 +35,20 @@ CREATE TYPE notification_type AS ENUM ('reminder', 'achievement', 'streak');
 CREATE TABLE users (
                        id UUID DEFAULT gen_random_uuid(),
                        email VARCHAR(255) NOT NULL,
+                       pseudo VARCHAR(255) NOT NULL,
                        password VARCHAR(255) NOT NULL,  -- Hash bcrypt/argon2 (60+ caractères)
                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
                        PRIMARY KEY (id),
-                       UNIQUE (email)
+                       UNIQUE (email),
+                       UNIQUE (pseudo)
 );
 
 -- Index pour optimiser la recherche par email (connexion)
 CREATE INDEX idx_users_email ON users(email);
+
+-- Index pour optimiser la recherche par pseudo
+CREATE INDEX idx_users_pseudo ON users(pseudo);  -- ✅ AJOUTÉ
 
 -- ============================================================================
 -- TABLE: user_preferences
@@ -172,6 +177,7 @@ CREATE OR REPLACE VIEW user_stats AS
 SELECT
     u.id AS user_id,
     u.email,
+    u.pseudo,  -- ✅ AJOUTÉ
     COUNT(dc.id) FILTER (WHERE dc.status = 'completed') AS total_completed,
     COUNT(dc.id) FILTER (WHERE dc.status = 'skipped') AS total_skipped,
     COUNT(dc.id) FILTER (WHERE dc.status = 'pending') AS total_pending,
@@ -180,13 +186,14 @@ SELECT
 FROM users u
          LEFT JOIN daily_challenge dc ON u.id = dc.user_id
          LEFT JOIN user_achievement ua ON u.id = ua.user_id
-GROUP BY u.id, u.email;
+GROUP BY u.id, u.email, u.pseudo;  -- ✅ MODIFIÉ
 
 -- ============================================================================
 -- COMMENTAIRES SUR LES TABLES
 -- ============================================================================
 
 COMMENT ON TABLE users IS 'Comptes utilisateurs de l''application';
+COMMENT ON COLUMN users.pseudo IS 'Nom d''utilisateur unique visible publiquement';  -- ✅ AJOUTÉ
 COMMENT ON TABLE user_preferences IS 'Préférences personnalisées pour génération IA';
 COMMENT ON TABLE daily_challenge IS 'Défis quotidiens générés par IA';
 COMMENT ON TABLE achievement IS 'Catalogue des badges débloquables';

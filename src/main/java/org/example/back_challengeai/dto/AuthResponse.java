@@ -13,6 +13,7 @@ import java.util.UUID;
 public class AuthResponse {
     private UUID id;
     private String email;
+    private String pseudo;
     private LocalDateTime createdAt;
-    private String token;  // Pour JWT plus tard
+    private String token;
 }

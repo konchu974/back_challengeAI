@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UuidGenerator;
-import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -44,8 +41,7 @@ public class DailyChallenge {
     private LocalDate challengeDate;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)  // ← Pour Hibernate 6.x !
-    @Column(name = "status", nullable = false, columnDefinition = "challenge_status")
+    @Column(name = "status", nullable = false)
     @Builder.Default
     private ChallengeStatus status = ChallengeStatus.PENDING;
 

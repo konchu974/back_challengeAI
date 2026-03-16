@@ -1,6 +1,5 @@
 package org.example.back_challengeai.service;
 
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +22,7 @@ public class UserService {
     private final UserPreferencesRepository userPreferencesRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public User registerUser(String email, String password) {
+    public User registerUser(String email, String password, String pseudo) {
 
         if (userRepository.existsByEmail(email)){
             throw new IllegalArgumentException("Email deja utilise");
@@ -33,21 +32,22 @@ public class UserService {
 
         User user = User.builder()
                 .email(email)
+                .pseudo(pseudo)
                 .password(hashedPassword)
                 .build();
 
         User savedUser = userRepository.save(user);
 
-         UserPreferences prefs = UserPreferences.builder()
-             .user(savedUser)
-             .dailyTime(10)
-             .interests(new ArrayList<>())
-             .goals(new ArrayList<>())
-             .build();
+        UserPreferences prefs = UserPreferences.builder()
+            .user(savedUser)
+            .dailyTime(10)
+            .interests(new ArrayList<>())
+            .goals(new ArrayList<>())
+            .build();
 
         userPreferencesRepository.save(prefs);
 
-       return savedUser;
+        return savedUser;
     }
 
     public User login(String email, String password) {
@@ -81,5 +81,16 @@ public class UserService {
         }
 
         return userPreferencesRepository.save(prefs);
+    }
+
+    public void changePassword(UUID userId, String oldPassword, String newPassword) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 }

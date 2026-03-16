@@ -4,21 +4,23 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class JwtService {
 
-    // Clé secrète pour signer les tokens (en production, mettre dans application.properties)
-    private static final String SECRET_KEY = "MonSecretSuperLongPourJWTAuMoins256BitsMinimumPourHS256AlgorithmSecurite";
+    @Value("${jwt.secret}")
+    private String secretKey;
 
-    // Durée de validité : 24 heures
-    private static final long EXPIRATION_TIME = 86400000; // 24h en millisecondes
+    @Value("${jwt.expiration:86400000}")
+    private long jwtExpiration;
 
     /**
      * Générer un token JWT pour un utilisateur
@@ -31,7 +33,7 @@ public class JwtService {
                 .setClaims(claims)
                 .setSubject(email)  // L'email comme "subject"
                 .setIssuedAt(new Date())  // Date de création
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))  // Expiration
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))  // Expiration
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)  // Signature
                 .compact();
     }
@@ -87,7 +89,23 @@ public class JwtService {
      * Obtenir la clé de signature
      */
     private Key getSigningKey() {
-        byte[] keyBytes = SECRET_KEY.getBytes();
+        byte[] keyBytes = secretKey.getBytes();
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public UUID getUserIdFromToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            String userIdString = claims.get("userId", String.class);
+            return UUID.fromString(userIdString);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Token invalide");
+        }
     }
 }

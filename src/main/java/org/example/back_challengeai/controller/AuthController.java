@@ -22,13 +22,14 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
-        User user = userService.registerUser(request.getEmail(), request.getPassword());
+        User user = userService.registerUser(request.getEmail(), request.getPassword(), request.getPseudo());
 
         String token = jwtService.generateToken(user.getEmail(), user.getId().toString());
 
         AuthResponse response = AuthResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
+                .pseudo(user.getPseudo())
                 .createdAt(user.getCreatedAt())
                 .token(token)
                 .build();
@@ -44,10 +45,11 @@ public class AuthController {
 
         AuthResponse response = AuthResponse.builder()
                 .id(user.getId())
-        .email(user.getEmail())
-        .createdAt(user.getCreatedAt())
-        .token(token)
-        .build();
+                .email(user.getEmail())
+                .pseudo(user.getPseudo())
+                .createdAt(user.getCreatedAt())
+                .token(token)
+                .build();
 
         return ResponseEntity.ok(response);
     }

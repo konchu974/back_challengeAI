@@ -6,6 +6,7 @@ import org.example.back_challengeai.entity.DailyChallenge;
 import org.example.back_challengeai.entity.User;
 import org.example.back_challengeai.entity.UserPreferences;
 import org.example.back_challengeai.repository.DailyChallengeRepository;
+import org.example.back_challengeai.repository.UserPreferencesRepository;
 import org.example.back_challengeai.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class ChallengeService {
 
     private final DailyChallengeRepository dailyChallengeRepository;
     private final UserRepository userRepository;
+    private final UserPreferencesRepository userPreferencesRepository;
     private final AIService aIService;
 
     public List<DailyChallenge> getTodayChallenges(UUID userId) {
@@ -82,7 +84,8 @@ public class ChallengeService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // 2. Récupérer les préférences
-        UserPreferences prefs = user.getPreferences();
+        UserPreferences prefs = userPreferencesRepository.findByUser_Id(userId)
+                .orElseThrow(() -> new RuntimeException("Preferences not found"));
 
         // 3. Générer avec l'IA
         List<String> aiChallenges = aIService.generateChallenges(
@@ -106,6 +109,10 @@ public class ChallengeService {
         }
 
         return dailyChallengeRepository.saveAll(challenges);
+    }
+
+    public long countCompleted(UUID userId) {
+        return dailyChallengeRepository.countByUser_IdAndStatus(userId, ChallengeStatus.COMPLETED);
     }
 
 }

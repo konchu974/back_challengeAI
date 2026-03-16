@@ -27,12 +27,12 @@ public class UserPreferences {
     private UUID id;
 
     @Type(JsonType.class)
-    @Column(name = "interests", columnDefinition = "jsonb")
+    @Column(name = "interests", columnDefinition = "text")
     @Builder.Default
-    private List<String> interests = new ArrayList<>();  // ← Initialisation
+    private List<String> interests = new ArrayList<>();
 
     @Type(JsonType.class)
-    @Column(name = "goals", columnDefinition = "jsonb")
+    @Column(name = "goals", columnDefinition = "text")
     @Builder.Default
     private List<String> goals = new ArrayList<>();
 
